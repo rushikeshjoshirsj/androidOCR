@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name">ocr</string>
+    <string name="view_and_edit_the_form">View And Edit The Form</string>
+    <string name="FirstName">First Name</string>
+    <string name="LastName">Last Name</string>
+    <string name="FathersName">"Father's Name"</string>
+    <string name="DOB">Date Of Birth</string>
+    <string name="Address">Address</string>
+    <string name="State">State</string>
+    <string name="Save">Next</string>
     <string-array name="billingFrequency">
         <item>Select Billing Frequency</item>
         <item>Monthly</item>

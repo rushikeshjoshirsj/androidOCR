@@ -22,6 +22,7 @@ import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -29,6 +30,8 @@ import android.widget.Toast;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     String cameraPermission[];
     String storagePermission[];
+    ArrayList<String> DetailsArray = new ArrayList<>();
+    String details;
 
     Uri image_uri;
 
@@ -56,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
         mPreviewIv = findViewById(R.id.imageIv);
         cameraPermission = new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+     //   Button button = findViewById(R.id.GoToForm);
+
     }
 
     @Override
@@ -198,11 +205,20 @@ public class MainActivity extends AppCompatActivity {
                 for (int i=0 ; i<items.size();i++){
                     TextBlock myItem = items.valueAt(i);
                     sb.append(myItem.getValue());
+                    //details = myItem.getValue();
+                    DetailsArray.add(myItem.getValue());
                     sb.append("\n");
                 }
                 mResultEt.setText(sb.toString());
             }
         }
+
+    }
+
+    public void goToForm(View view) {
+        Intent intent = new Intent(MainActivity.this, Form.class);
+        intent.putStringArrayListExtra("details", DetailsArray);
+        startActivity(intent);
 
     }
 }

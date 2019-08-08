@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: me.riddhimanadib.form-master:form-master:1.1.0@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/5d5867b22225f91aba210ef310d9dfaa/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/5d5867b22225f91aba210ef310d9dfaa/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/me.riddhimanadib.form-master/form-master/1.1.0/3afb2251e834bf455d0a61174505e1752f2aa427/form-master-1.1.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

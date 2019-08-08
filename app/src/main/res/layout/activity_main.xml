@@ -71,6 +71,13 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <Button
+                android:id="@+id/GoToForm"
+                android:text="@string/view_and_edit_the_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="goToForm"/>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </RelativeLayout>
