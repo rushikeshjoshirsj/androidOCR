@@ -27,6 +27,9 @@ public class SelectState extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), SelectCoverage.class);
+                ProposedInsured proposedInsured = new ProposedInsured();
+                proposedInsured.setState("Washington");
+                intent.putExtra("INSURED",proposedInsured);
                 startActivity(intent);
             }
         });

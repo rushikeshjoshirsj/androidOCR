@@ -45,6 +45,7 @@
         android:background="@color/colorPrimary"
         android:text="Life Insurance"
         android:textAlignment="center"
+        android:gravity="center_horizontal"
         android:textColor="@android:color/white"
         android:textSize="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
