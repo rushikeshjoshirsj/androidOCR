@@ -13,10 +13,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SelectCoverage"></activity>
+        <activity android:name=".SubmittingOfficeDetails"></activity>
+        <activity android:name=".AboutApplicantPage1" />
+        <activity android:name=".SelectRider" />
+        <activity android:name=".SelectUnderwritingClass" />
+        <activity android:name=".SelectCoverage" />
         <activity android:name=".SelectState" />
         <activity android:name=".StartNewCase" />
-        <activity android:name=".Form"/>
+        <activity android:name=".Form" />
         <activity android:name=".LogInPage" />
         <activity android:name=".MainActivity">
             <intent-filter>

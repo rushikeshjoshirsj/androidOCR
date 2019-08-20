@@ -1,8 +1,11 @@
 package com.example.ocr;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
-public class ProposedInsured {
+public class ProposedInsured implements Parcelable {
     private String firstName;
     private String lastName;
     private String gender;
@@ -20,6 +23,42 @@ public class ProposedInsured {
     private String underwritingClass;
     private String rating;
     private boolean tobacco;
+
+    protected ProposedInsured(Parcel in) {
+        firstName = in.readString();
+        lastName = in.readString();
+        gender = in.readString();
+        addressLine1 = in.readString();
+        addressLine2 = in.readString();
+        zipCode = in.readString();
+        phoneNumber = in.readString();
+        email = in.readString();
+        state = in.readString();
+        policyLength = in.readString();
+        coverageAmount = in.readString();
+        rider = in.createStringArrayList();
+        premium = in.readString();
+        billingFrequency = in.readString();
+        underwritingClass = in.readString();
+        rating = in.readString();
+        tobacco = in.readByte() != 0;
+    }
+
+    public ProposedInsured() {
+        super();
+    }
+
+    public static final Creator<ProposedInsured> CREATOR = new Creator<ProposedInsured>() {
+        @Override
+        public ProposedInsured createFromParcel(Parcel in) {
+            return new ProposedInsured(in);
+        }
+
+        @Override
+        public ProposedInsured[] newArray(int size) {
+            return new ProposedInsured[size];
+        }
+    };
 
     public void setFirstName(String firstName) {
         this.firstName=firstName;
@@ -75,5 +114,31 @@ public class ProposedInsured {
 
     public void setUnderwritingClass(String underwritingClass) {
         this.underwritingClass = underwritingClass;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(firstName);
+        parcel.writeString(lastName);
+        parcel.writeString(gender);
+        parcel.writeString(addressLine1);
+        parcel.writeString(addressLine2);
+        parcel.writeString(zipCode);
+        parcel.writeString(phoneNumber);
+        parcel.writeString(email);
+        parcel.writeString(state);
+        parcel.writeString(policyLength);
+        parcel.writeString(coverageAmount);
+        parcel.writeStringList(rider);
+        parcel.writeString(premium);
+        parcel.writeString(billingFrequency);
+        parcel.writeString(underwritingClass);
+        parcel.writeString(rating);
+        parcel.writeByte((byte) (tobacco ? 1 : 0));
     }
 }
