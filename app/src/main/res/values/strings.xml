@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">ocr</string>
+    <string-array name="billingFrequency">
+        <item>Select Billing Frequency</item>
+        <item>Monthly</item>
+        <item>Quaterly</item>
+        <item>Half-Yearly</item>
+        <item>Annually</item>
+    </string-array>
+    <string-array name="states">
+        <item>Select State</item>
+        <item>New York</item>
+        <item>Iowa</item>
+        <item>California</item>
+        <item>Kenturcy</item>
+        <item>Washington</item>
+        <item>Alaska</item>
+    </string-array>
 </resources>

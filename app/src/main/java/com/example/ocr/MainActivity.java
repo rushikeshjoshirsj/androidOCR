@@ -1,206 +1,176 @@
 package com.example.ocr;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import android.Manifest;
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.SparseArray;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.MultiProcessor;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
-    EditText mResultEt;
-    ImageView mPreviewIv;
-
-    public static final int CAMERA_REQUEST_CODE = 200;
-    public static final int STORAGE_REQUEST_CODE = 400;
-    public static final int IMAGE_PICK_GALLERY_CODE = 1000;
-    public static final int IMAGE_PICK_CAMERA_CODE = 1001;
-
-    String cameraPermission[];
-    String storagePermission[];
-
-    Uri image_uri;
+    Button btnCaptureImage;
+    ImageView imageDisplay;
+    Button btnResetImage;
+    Button nextButton;
+    StringBuilder sb ;
+    private static final int PICK_IMAGE = 1;
+    Uri imageUri;
+    BarcodeDetector barcodeDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setSubtitle("click + to add image");
-        mResultEt = findViewById(R.id.resultEt);
-        mPreviewIv = findViewById(R.id.imageIv);
-        cameraPermission = new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    }
+        btnCaptureImage = (Button)findViewById(R.id.btn_captureImage);
+        imageDisplay = (ImageView)findViewById(R.id.imageCapture);
+        btnResetImage = (Button)findViewById(R.id.btn_resetImage);
+        nextButton = (Button)findViewById(R.id.nextButton);
+        sb = new StringBuilder();
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main,menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-        if(id == R.id.addImage){
-            Toast.makeText(this,"works",Toast.LENGTH_SHORT).show();
-            showImageImportDialog();
-
-        }
-        if(id == R.id.settings){
-            Toast.makeText(this,"settings",Toast.LENGTH_SHORT).show();
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void showImageImportDialog() {
-        Toast.makeText(this,"works fine",Toast.LENGTH_SHORT).show();
-        String[] items = {"Camera","Gallery"};
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle("select image");
-        dialog.setItems(items, new DialogInterface.OnClickListener() {
+        btnCaptureImage.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if(i==0){
-                    if(!checkCameraPermission()){
-                        requestCameraPermission();
-                    }
-                    else {
-                        pickCamera();
-                    }
-                }
-                if(i==1) {
-                    if(!checkStoragePermission()){
-                        requestStoragePermission();
-                    }
-                    else {
-                        pickGallery();
-                    }
-
-                }
+            public void onClick(View view) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent,0);
             }
         });
-        dialog.create().show();
-    }
+        btnResetImage.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+            @Override
+            public void onClick(View view) {
+                //imageDisplay.setImageResource(android.R.color.transparent);
+                Intent galleryIntent = new Intent();
+                galleryIntent.setType("image/*");
+                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(galleryIntent,"select picture"),PICK_IMAGE);
 
-    private void pickGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK,MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        intent.putExtra("crop", "true");
-        intent.putExtra("scale", true);
-        intent.putExtra("aspectX", 16);
-        intent.putExtra("aspectY", 9);
-        startActivityForResult(intent,IMAGE_PICK_GALLERY_CODE);
-    }
+            }
+        });
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), review_form.class);
+                intent.putExtra("data",sb.toString());
+                startActivity(intent);
 
-    private void pickCamera() {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE,"newPic");
-        values.put(MediaStore.Images.Media.DESCRIPTION,"Image to Text");
-        image_uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,image_uri);
-        startActivityForResult(cameraIntent,IMAGE_PICK_CAMERA_CODE);
-
-    }
-
-    private void requestStoragePermission() {
-        ActivityCompat.requestPermissions(this,storagePermission,STORAGE_REQUEST_CODE);
-    }
-
-    private boolean checkStoragePermission() {
-        boolean result1 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
-        return result1;
-    }
-
-    private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(this,cameraPermission,CAMERA_REQUEST_CODE);
-    }
-
-    private boolean checkCameraPermission() {
-        boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
-        boolean result1 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
-        return result && result1;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case CAMERA_REQUEST_CODE :
-                if(grantResults.length > 0){
-                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    boolean writeStorageAcepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    if(cameraAccepted && writeStorageAcepted)
-                    {
-                        pickCamera();
-                    }
-                    else {
-                        Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show();
-                    }
-                }break;
-            case STORAGE_REQUEST_CODE :
-                if(grantResults.length > 0){
-
-                    boolean writeStorageAcepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    if(writeStorageAcepted)
-                    {
-                        pickGallery();
-                    }
-                    else {
-                        Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show();
-                    }
-                }break;
-        }
-
+            }
+        });
+        // ProposedInsured proposedInsured = getIntent().getParcelableExtra("proposedInsured");
 
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if(resultCode == RESULT_OK){
-            mPreviewIv.setImageURI(image_uri);
-            BitmapDrawable bitmapDrawable = (BitmapDrawable)mPreviewIv.getDrawable();
-            Bitmap bitmap = bitmapDrawable.getBitmap();
-            TextRecognizer recognizer = new TextRecognizer.Builder(getApplicationContext()).build();
-            if(!recognizer.isOperational()){
-                Toast.makeText(this,"error",Toast.LENGTH_SHORT);
-            }
-            else
-            {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == 0) {
+            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+            imageDisplay.setImageBitmap(bitmap);
+//            TextRecognizer recognizer = new TextRecognizer.Builder(getApplicationContext()).build();
+//            if (!recognizer.isOperational()) {
+//                Toast.makeText(this, "error", Toast.LENGTH_SHORT).show();
+//            } else {
+//                Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+//                SparseArray<TextBlock> items = recognizer.detect(frame);
+//                for (int i = 0; i < items.size(); i++) {
+//                    TextBlock myItem = items.valueAt(i);
+//                    sb.append(myItem.getValue());
+//                    sb.append("\n");
+//                }
+//                Toast.makeText(this, sb.toString() + "hellooooo" + items.size(), Toast.LENGTH_SHORT).show();
+//            }
+            barcodeDetector = new BarcodeDetector.Builder(getApplicationContext()).setBarcodeFormats(Barcode.DRIVER_LICENSE).build();
+            if (!barcodeDetector.isOperational()){
+                Toast.makeText(this, "error in barcode", Toast.LENGTH_SHORT).show();
+            }else {
                 Frame frame = new Frame.Builder().setBitmap(bitmap).build();
-                SparseArray<TextBlock> items = recognizer.detect(frame);
-                StringBuilder sb = new StringBuilder();
-                for (int i=0 ; i<items.size();i++){
-                    TextBlock myItem = items.valueAt(i);
-                    sb.append(myItem.getValue());
-                    sb.append("\n");
+                if(frame == null){
+                    Toast.makeText(this,"hi null frame" , Toast.LENGTH_SHORT).show();
                 }
-                mResultEt.setText(sb.toString());
+                SparseArray<Barcode> barcodeSparseArray = barcodeDetector.detect(frame);
+                Barcode barcode = barcodeSparseArray.valueAt(0);
+                Toast.makeText(this,barcode.displayValue + "hi" , Toast.LENGTH_SHORT).show();
+
+
+//                for(int i=0; i< barcodeSparseArray.size();i++){
+//                    Barcode barcode = barcodeSparseArray.valueAt(i);
+//                    sb.append(barcode.displayValue);
+//                    sb.append("\n");
+//                }
+            }
+
+        }
+
+        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
+            imageUri = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),imageUri);
+                imageDisplay.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 600,600, true));
+//                TextRecognizer recognizer = new TextRecognizer.Builder(getApplicationContext()).build();
+//                if (!recognizer.isOperational()) {
+//                    Toast.makeText(this, "error", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+//                    SparseArray<TextBlock> items = recognizer.detect(frame);
+//                    for (int i = 0; i < items.size(); i++) {
+//                        TextBlock myItem = items.valueAt(i);
+//                        sb.append(myItem.getValue());
+//                        sb.append("\n");
+//                    }
+//                    Toast.makeText(this, sb.toString() + "hellooooo" + items.size(), Toast.LENGTH_SHORT).show();
+//                }
+                barcodeDetector = new BarcodeDetector.Builder(getApplicationContext()).setBarcodeFormats(Barcode.PDF417 | Barcode.ALL_FORMATS).build();
+//                barcodeDetector.setProcessor(new MultiProcessor.Builder<>(this).build());
+
+                if (!barcodeDetector.isOperational()){
+                    Toast.makeText(this, "error in barcode", Toast.LENGTH_SHORT).show();
+                }else {
+                    Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+//                    barcodeDetector.setProcessor(new Detector.Processor<Barcode>(){
+//                        @Override
+//                        public void release() {
+//                            //NOOP
+//                        }
+//                    };
+
+                    SparseArray<Barcode> barcodeSparseArray = barcodeDetector.detect(frame);
+                    int i =0 ;
+                    if(barcodeSparseArray.size()==0){
+                        Toast.makeText(this, "hi array is empty" , Toast.LENGTH_SHORT).show();
+                    }else{
+
+                        Barcode barcode = barcodeSparseArray.valueAt(i);
+                        Toast.makeText(this,barcode.displayValue + "hi" , Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
